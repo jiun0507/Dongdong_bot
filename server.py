@@ -5,10 +5,9 @@ bot = telegram_chatbot("config.cfg")
 
 
 def make_reply(msg):
-    reply = None
+    reply = '뭐라 해드릴 말이 없군요....'
     if msg is not None:
-        # reply = gizoogle.text(msg)
-        reply = 'Lets dance to this music'
+        reply = msg
     return reply
 
 update_id = None
@@ -23,5 +22,9 @@ while True:
             except:
                 message = None
             from_ = item["message"]["from"]["id"]
+            if message == 'Where am I?':
+                message = bot.get_location()
+            else:
+                message = '뭐라 해드릴 말이 없군요...'
             reply = make_reply(message)
             bot.send_message(reply, from_)
