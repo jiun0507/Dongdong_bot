@@ -24,6 +24,8 @@ while True:
             from_ = item["message"]["from"]["id"]
             if message == 'Where am I?':
                 message = bot.get_location()
+            elif message == 'Github':
+                message = bot.get_github()
             else:
                 message = '뭐라 해드릴 말이 없군요...'
             reply = make_reply(message)

@@ -2,6 +2,19 @@ import requests
 import json
 import configparser as cfg
 
+payload = {
+  "homeMobileCountryCode": '450',
+  "homeMobileNetworkCode": '03',
+  "radioType": "gsm",
+  "carrier": "SKT",
+  "considerIp": "true",
+  "cellTowers": [
+    
+  ],
+  "wifiAccessPoints": [
+    
+  ]
+}
 
 class telegram_chatbot():
 
@@ -12,11 +25,26 @@ class telegram_chatbot():
 
     def get_location(self):
         print(self.geolocation_url)
-        # res = requests.post(self.geolocation_url)
-        # data = json.loads(res.content)
-        # message = "You are at lattitude = {}, longtitude = {}".format(data['location']['lat'], data['location']['lng'])
-        message = '지금 어딨는지 잘 몰겠어요.'
+        res = requests.post(self.geolocation_url, data=payload)
+        data = json.loads(res.content)
+        message = "You are at lattitude = {}, longtitude = {}".format(data['location']['lat'], data['location']['lng'])
+        # message = '지금 어딨는지 잘 몰겠어요.'
         return message
+
+    def get_github(self):
+        headers = {'Username':'jkim2@bowdoin.edu', 'Password':'Basic Bowdoin2019!', 'Authorization':'token c6f8247c81e92c34c905ae5d151a37ffaaef1429'}
+        res = requests.get("https://api.github.com/user", headers=headers)
+        # print(res.content)
+        data = json.loads(res.content)
+        print(data['repos_url'])
+        res = requests.get(data['repos_url'], headers=headers)
+        github_data = json.loads(res.content)
+        repo_num = len(github_data)
+        names = ''
+        for repo in github_data:
+            names += repo['name'] + ','
+        result = 'You have {} repos. They are {}.'.format(repo_num, names[:-1])
+        return result
 
     def get_updates(self, offset=None):
         url = self.base + "getUpdates?timeout=100"
