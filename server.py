@@ -1,5 +1,6 @@
 from bot import telegram_chatbot
-
+import json
+import requests
 bot = telegram_chatbot("config.cfg")
 
 
@@ -11,7 +12,12 @@ def make_reply(msg):
 
 def lambda_handler(event=None, context=None):
     update_id = None
-    while True:
+    telegram_id = -1
+    response = {
+        "statusCode": 200,
+        "body": json.dumps({"message": 'ok'})
+    }
+    try:
         updates = bot.get_updates(offset=update_id)
         updates = updates["result"]
         if updates:
@@ -22,6 +28,7 @@ def lambda_handler(event=None, context=None):
                 except:
                     message = None
                 from_ = item["message"]["from"]["id"]
+                telegram_id = from_
                 if message == 'Where am I?':
                     message = bot.get_location()
                 elif message == 'Github':
@@ -30,4 +37,12 @@ def lambda_handler(event=None, context=None):
                     message = '뭐라 해드릴 말이 없군요...'
                 reply = make_reply(message)
                 bot.send_message(reply, from_)
-lambda_handler()
+                updates = bot.get_updates(offset=update_id)
+    except requests.exceptions.Timeout:
+        if telegram_id == -1:
+            message = '지금은 보내드릴게 없습니다.'
+            # message = bot.get_location()
+            reply = make_reply(message)
+            bot.send_message(reply, 1346080433)
+        return response
+    return response
