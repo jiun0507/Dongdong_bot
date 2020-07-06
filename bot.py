@@ -22,6 +22,7 @@ class telegram_chatbot():
         self.token = self.read_key_from_config_file(config, 'token')
         self.geolocation_url = self.read_key_from_config_file(config, 'geolocation_url')
         self.base = "https://api.telegram.org/bot{}/".format(self.token)
+        self.base2 = "https://api.telegram.org/bot1348934480:AAFq8Oo9LzcvPcoCK682maOzJzO5HNX9jNY/"
 
     def get_location(self):
         print(self.geolocation_url)
@@ -34,9 +35,7 @@ class telegram_chatbot():
     def get_github(self):
         headers = {'Username':'jkim2@bowdoin.edu', 'Password':'Basic Bowdoin2019!', 'Authorization':'token c6f8247c81e92c34c905ae5d151a37ffaaef1429'}
         res = requests.get("https://api.github.com/user", headers=headers)
-        # print(res.content)
         data = json.loads(res.content)
-        print(data['repos_url'])
         res = requests.get(data['repos_url'], headers=headers)
         github_data = json.loads(res.content)
         repo_num = len(github_data)
@@ -50,13 +49,19 @@ class telegram_chatbot():
         url = self.base + "getUpdates?timeout=100"
         if offset:
             url = url + "&offset={}".format(offset + 1)
-        r = requests.get(url)
+        r = requests.get(url, timeout=3)
         return json.loads(r.content)
 
     def send_message(self, msg, chat_id):
         url = self.base + "sendMessage?chat_id={}&text={}".format(chat_id, msg)
+        
         if msg is not None:
             requests.get(url)
+            
+    def send_message2(self, msg, chat_id):
+        url2 = self.base2 + "sendMessage?chat_id={}&text={}".format(chat_id, msg)
+        if msg is not None:
+            requests.get(url2)        
 
     def read_key_from_config_file(self, config, key):
         parser = cfg.ConfigParser()

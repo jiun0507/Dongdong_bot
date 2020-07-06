@@ -25,6 +25,7 @@ def lambda_handler(event=None, context=None):
                 update_id = item["update_id"]
                 try:
                     message = str(item["message"]["text"])
+                    # bot.send_message(message, 1346080433)
                 except:
                     message = None
                 from_ = item["message"]["from"]["id"]
@@ -40,9 +41,11 @@ def lambda_handler(event=None, context=None):
                 updates = bot.get_updates(offset=update_id)
     except requests.exceptions.Timeout:
         if telegram_id == -1:
-            message = '지금은 보내드릴게 없습니다.'
-            # message = bot.get_location()
+            # message = '지금은 보내드릴게 없습니다.'
+            message = bot.get_location()
             reply = make_reply(message)
             bot.send_message(reply, 1346080433)
         return response
     return response
+
+lambda_handler()
