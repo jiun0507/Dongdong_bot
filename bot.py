@@ -2,6 +2,13 @@ import requests
 import json
 import configparser as cfg
 
+from telebot import (
+    apihelper,
+    handler_backends,
+    types, 
+    util,
+)
+
 payload = {
   "homeMobileCountryCode": '450',
   "homeMobileNetworkCode": '03',
@@ -18,15 +25,19 @@ payload = {
 class github_bot:
     def get_github(self, token):
         headers = {'Authorization': token}
+
         res = requests.get("https://api.github.com/user", headers=headers)
+
         data = json.loads(res.content)
+
         res = requests.get(data['repos_url'], headers=headers)
+
         github_data = json.loads(res.content)
         repo_num = len(github_data)
         names = ''
         for repo in github_data:
-            names += repo['name'] + ','
-        result = 'You have {} repos. They are {}.'.format(repo_num, names[:-1])
+            names += repo['name'] + '\n'
+        result = 'You have {} repos. \nThey are : \n{}.'.format(repo_num, names[:-1])
         return result
 
 class jira_bot:
@@ -49,7 +60,15 @@ class jira_bot:
                 ticket = '{}: {} status {}\n'.format(jira_ticket['key'], jira_ticket['fields']['summary'], jira_ticket['fields']['status']['name'])
                 message += ticket
         return message
-   
+
+    def get_reply_markup(self, options):
+        markup = types.ReplyKeyboardMarkup()
+        for option in options:
+            item = types.KeyboardButton(option)
+            markup.row(item)
+        return markup
+
+
 class google_map_bot:
     def get_location(self, key, url):
         params = (
@@ -84,11 +103,45 @@ class telegram_chatbot(github_bot, jira_bot, google_map_bot):
         r = requests.get(url, timeout=3)
         return json.loads(r.content)
 
+
+    def send_full_message(
+            self, token, text, chat_id,
+            disable_web_page_preview=None, reply_to_message_id=None, reply_markup=None,
+            parse_mode=None, disable_notification=None, timeout=None):
+        """
+        Use this method to send text messages. On success, the sent Message is returned.
+        :param token:
+        :param chat_id:
+        :param text:
+        :param disable_web_page_preview:
+        :param reply_to_message_id:
+        :param reply_markup:
+        :param parse_mode:
+        :param disable_notification:
+        :param timeout:
+        :return:
+        """
+        method_url = r"sendMessage"
+        payload = {'chat_id': str(chat_id), 'text': text}
+        if disable_web_page_preview is not None:
+            payload['disable_web_page_preview'] = disable_web_page_preview
+        if reply_to_message_id:
+            payload['reply_to_message_id'] = reply_to_message_id
+        if reply_markup:
+            payload['reply_markup'] = apihelper._convert_markup(reply_markup)
+        if parse_mode:
+            payload['parse_mode'] = parse_mode
+        if disable_notification is not None:
+            payload['disable_notification'] = disable_notification
+        if timeout:
+            payload['connect-timeout'] = timeout
+        return apihelper._make_request(token, method_url, params=payload, method='post')
+
+
     def send_message(self, msg, chat_id):
         url = self.base + "sendMessage?chat_id={}&text={}".format(chat_id, msg)
         if msg is not None:
             res = requests.get(url)
-            print(res)
 
     def read_key_from_config_file(self, config, key):
         parser = cfg.ConfigParser()
