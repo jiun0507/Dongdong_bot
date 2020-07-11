@@ -34,6 +34,9 @@ def lambda_handler(event=None, context=None):
                     message = bot.get_location()
                 elif message == 'Github':
                     message = bot.get_github()
+                elif message == 'Jira':
+                    bot.get_jira_tickets()
+                    pass
                 else:
                     message = '뭐라 해드릴 말이 없군요...'
                 reply = make_reply(message)

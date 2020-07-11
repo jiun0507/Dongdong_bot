@@ -32,6 +32,24 @@ class telegram_chatbot():
         # message = '지금 어딨는지 잘 몰겠어요.'
         return message
 
+    def get_jira_tickets(self):
+        headers = {
+            'Authorization': 'Basic Ym9iOldsZGpzOTYwNSE=',
+            'Content-Type': 'application/json',
+        }
+
+        params = (
+            ('jql', 'assignee=bob'),
+        )
+
+        res = requests.get('https://jira.kasa.network/rest/api/2/search/', headers=headers, params=params)
+        jira_tickets = json.loads(res.content)
+        ticket_num = len(jira_tickets)
+        print("There are %s of tickets assigned to bob.", ticket_num)
+        for jira_ticket in jira_tickets['issues']:
+            if jira_ticket['fields']['status']['name'] not in ['Done', 'Backlog']:
+                print(jira_ticket['key'],": ",jira_ticket['fields']['summary'], jira_ticket['fields']['status']['name'])
+
     def get_github(self):
         headers = {'Username':'jkim2@bowdoin.edu', 'Password':'Basic Bowdoin2019!', 'Authorization':'token c6f8247c81e92c34c905ae5d151a37ffaaef1429'}
         res = requests.get("https://api.github.com/user", headers=headers)
