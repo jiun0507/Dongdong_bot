@@ -9,49 +9,15 @@ payload = {
   "carrier": "SKT",
   "considerIp": "true",
   "cellTowers": [
-    
   ],
   "wifiAccessPoints": [
-    
   ]
 }
 
-class telegram_chatbot():
 
-    def __init__(self, config):
-        self.token = self.read_key_from_config_file(config, 'token')
-        self.geolocation_url = self.read_key_from_config_file(config, 'geolocation_url')
-        self.base = "https://api.telegram.org/bot{}/".format(self.token)
-        self.base2 = "https://api.telegram.org/bot1348934480:AAFq8Oo9LzcvPcoCK682maOzJzO5HNX9jNY/"
-
-    def get_location(self):
-        print(self.geolocation_url)
-        res = requests.post(self.geolocation_url, data=payload)
-        data = json.loads(res.content)
-        message = "You are at lattitude = {}, longtitude = {}".format(data['location']['lat'], data['location']['lng'])
-        # message = '지금 어딨는지 잘 몰겠어요.'
-        return message
-
-    def get_jira_tickets(self):
-        headers = {
-            'Authorization': 'Basic Ym9iOldsZGpzOTYwNSE=',
-            'Content-Type': 'application/json',
-        }
-
-        params = (
-            ('jql', 'assignee=bob'),
-        )
-
-        res = requests.get('https://jira.kasa.network/rest/api/2/search/', headers=headers, params=params)
-        jira_tickets = json.loads(res.content)
-        ticket_num = len(jira_tickets)
-        print("There are %s of tickets assigned to bob.", ticket_num)
-        for jira_ticket in jira_tickets['issues']:
-            if jira_ticket['fields']['status']['name'] not in ['Done', 'Backlog']:
-                print(jira_ticket['key'],": ",jira_ticket['fields']['summary'], jira_ticket['fields']['status']['name'])
-
-    def get_github(self):
-        headers = {'Username':'jkim2@bowdoin.edu', 'Password':'Basic Bowdoin2019!', 'Authorization':'token c6f8247c81e92c34c905ae5d151a37ffaaef1429'}
+class github_bot:
+    def get_github(self, token):
+        headers = {'Authorization': token}
         res = requests.get("https://api.github.com/user", headers=headers)
         data = json.loads(res.content)
         res = requests.get(data['repos_url'], headers=headers)
@@ -63,6 +29,54 @@ class telegram_chatbot():
         result = 'You have {} repos. They are {}.'.format(repo_num, names[:-1])
         return result
 
+class jira_bot:
+ 
+    def get_jira_tickets(self, key, domain):
+        headers = {
+            'Authorization': key,
+            'Content-Type': 'application/json',
+        }
+        params = (
+            ('jql', 'assignee=bob'),
+        )
+        res = requests.get(domain, headers=headers, params=params)
+        jira_tickets = json.loads(res.content)
+        ticket_num = len(jira_tickets)
+        print("There are {} of tickets assigned to bob.".format(ticket_num))
+        message = ""
+        for jira_ticket in jira_tickets['issues']:
+            if jira_ticket['fields']['status']['name'] not in ['Done', 'Backlog']:
+                ticket = '{}: {} status {}\n'.format(jira_ticket['key'], jira_ticket['fields']['summary'], jira_ticket['fields']['status']['name'])
+                message += ticket
+        return message
+   
+class google_map_bot:
+    def get_location(self, key, url):
+        params = (
+            ('key={}'.format(key))
+        )
+        res = requests.post(url, params=params)
+        data = json.loads(res.content)
+        message = "You are at lattitude = {}, longtitude = {}".format(data['location']['lat'], data['location']['lng'])
+        return message
+
+
+class telegram_chatbot(github_bot, jira_bot, google_map_bot):
+
+    def __init__(self, config):
+        super().__init__()
+        self.token = self.read_key_from_config_file(config, 'token')
+        self.github_token =  self.read_key_from_config_file(config, 'github_token')
+        self.google_map_key =  self.read_key_from_config_file(config, 'google_map_key')
+        self.youjin_token = self.read_key_from_config_file(config, 'youjin_token')
+        self.jira_authorization = self.read_key_from_config_file(config, 'jira_authorization')
+
+        self.domain = self.read_key_from_config_file(config, 'domain')
+        self.geolocation_url = self.read_key_from_config_file(config, 'geolocation_url')
+        self.jira_domain = self.read_key_from_config_file(config, 'jira_domain')
+        self.base = "{}{}/".format(self.domain, self.token)
+        self.base2 = "{}{}/".format(self.domain, self.youjin_token)
+
     def get_updates(self, offset=None):
         url = self.base + "getUpdates?timeout=100"
         if offset:
@@ -72,16 +86,13 @@ class telegram_chatbot():
 
     def send_message(self, msg, chat_id):
         url = self.base + "sendMessage?chat_id={}&text={}".format(chat_id, msg)
-        
         if msg is not None:
-            requests.get(url)
-            
-    def send_message2(self, msg, chat_id):
-        url2 = self.base2 + "sendMessage?chat_id={}&text={}".format(chat_id, msg)
-        if msg is not None:
-            requests.get(url2)        
+            res = requests.get(url)
+            print(res)
 
     def read_key_from_config_file(self, config, key):
         parser = cfg.ConfigParser()
         parser.read(config)
         return parser.get('creds', key)
+
+

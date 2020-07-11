@@ -31,12 +31,11 @@ def lambda_handler(event=None, context=None):
                 from_ = item["message"]["from"]["id"]
                 telegram_id = from_
                 if message == 'Where am I?':
-                    message = bot.get_location()
+                    message = bot.get_location(bot.google_map_key, bot.geolocation_url)
                 elif message == 'Github':
-                    message = bot.get_github()
+                    message = bot.get_github(bot.github_token)
                 elif message == 'Jira':
-                    bot.get_jira_tickets()
-                    pass
+                    message = bot.get_jira_tickets(bot.jira_authorization, bot.jira_domain)
                 else:
                     message = '뭐라 해드릴 말이 없군요...'
                 reply = make_reply(message)
