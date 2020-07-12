@@ -9,6 +9,7 @@ from telebot import (
     util,
 )
 from reply_texts import reply
+import alpaca_trade_api as tradeapi
 
 payload = {
   "homeMobileCountryCode": '450',
@@ -21,6 +22,15 @@ payload = {
   "wifiAccessPoints": [
   ]
 }
+
+class alpaca_bot:
+    def get_account_info(self, api):
+        # Get our account information.
+        account = api.get_account()
+
+        # Check our current balance vs. our balance at the last market close
+        balance_change = float(account.equity) - float(account.last_equity)
+        return 'Today\'s portfolio balance change:{}'.format(balance_change)
 
 
 class github_bot:
@@ -89,7 +99,7 @@ class google_map_bot:
         return message
 
 
-class telegram_chatbot(github_bot, jira_bot, google_map_bot):
+class telegram_chatbot(github_bot, jira_bot, google_map_bot, alpaca_bot):
 
     def __init__(self, config):
         super().__init__()
@@ -98,6 +108,8 @@ class telegram_chatbot(github_bot, jira_bot, google_map_bot):
         self.google_map_key =  self.read_key_from_config_file(config, 'google_map_key')
         self.youjin_token = self.read_key_from_config_file(config, 'youjin_token')
         self.jira_authorization = self.read_key_from_config_file(config, 'jira_authorization')
+        self.alpaca_api_id = self.read_key_from_config_file(config, 'alpaca_api_id')
+        self.alpaca_key = self.read_key_from_config_file(config, 'alpaca_key')
 
         self.bot_id = self.read_key_from_config_file(config, 'bot_id')
         self.wake_up_url = self.read_key_from_config_file(config, 'wake_up_url')
@@ -106,6 +118,13 @@ class telegram_chatbot(github_bot, jira_bot, google_map_bot):
         self.jira_domain = self.read_key_from_config_file(config, 'jira_domain')
         self.base = "{}{}/".format(self.domain, self.token)
         self.base2 = "{}{}/".format(self.domain, self.youjin_token)
+
+        self.alpaca_api = tradeapi.REST(        
+            self.alpaca_api_id,
+            self.alpaca_key,
+            'https://paper-api.alpaca.markets',
+            api_version='v2',
+        )
 
     def get_updates(self, offset=None):
         url = self.base + "getUpdates?timeout=100"

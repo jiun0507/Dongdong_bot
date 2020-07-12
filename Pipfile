@@ -13,6 +13,7 @@ flask = "*"
 google-api-python-client = "*"
 google-auth-httplib2 = "*"
 google-auth-oauthlib = "*"
+alpaca-trade-api = "*"
 
 [requires]
 python_version = "3.8"

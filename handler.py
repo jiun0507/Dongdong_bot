@@ -6,6 +6,7 @@ from reply_texts import (
     button_text,
 )
 
+
 class message_handler:
     def __init__(self, bot):
         self.bot = bot
@@ -38,6 +39,9 @@ class message_handler:
                         message = self.bot.get_jira_tickets(self.bot.jira_authorization, self.bot.jira_domain)
                         options = message.split('\n')
                         reply_markup = self.bot.get_reply_markup(options)
+                    elif message == 'alpaca':
+                        message = self.bot.get_account_info(api=self.bot.alpaca_api)
+                        
                     else:
                         raise ValueError
                     
