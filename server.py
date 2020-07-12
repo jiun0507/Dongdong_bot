@@ -5,7 +5,7 @@ from bot import telegram_chatbot
 from handler import message_handler
 
 
-bot = telegram_chatbot("config.cfg")
+bot = telegram_chatbot(".config.cfg")
 initial_handler = message_handler(bot)
 
 def lambda_handler(event=None, context=None):
