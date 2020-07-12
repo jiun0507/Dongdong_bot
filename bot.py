@@ -8,6 +8,7 @@ from telebot import (
     types, 
     util,
 )
+from reply_texts import reply
 
 payload = {
   "homeMobileCountryCode": '450',
@@ -61,11 +62,20 @@ class jira_bot:
                 message += ticket
         return message
 
-    def get_reply_markup(self, options):
+    def get_reply_markup(self, options, parse_mode=None):
         markup = types.ReplyKeyboardMarkup()
         for option in options:
             item = types.KeyboardButton(option)
             markup.row(item)
+        return markup
+
+
+    def get_inline_reply_markup_with_urls(self, options, urls, parse_mode=None):
+        markup = types.InlineKeyboardMarkup()
+        for (option, url) in zip(options, urls):
+            print(options, url)
+            item = types.InlineKeyboardButton(text=option, url=url)
+            markup.add(item)
         return markup
 
 
@@ -90,6 +100,8 @@ class telegram_chatbot(github_bot, jira_bot, google_map_bot):
         self.youjin_token = self.read_key_from_config_file(config, 'youjin_token')
         self.jira_authorization = self.read_key_from_config_file(config, 'jira_authorization')
 
+        self.bot_id = self.read_key_from_config_file(config, 'bot_id')
+        self.wake_up_url = self.read_key_from_config_file(config, 'wake_up_url')
         self.domain = self.read_key_from_config_file(config, 'domain')
         self.geolocation_url = self.read_key_from_config_file(config, 'geolocation_url')
         self.jira_domain = self.read_key_from_config_file(config, 'jira_domain')
@@ -141,7 +153,7 @@ class telegram_chatbot(github_bot, jira_bot, google_map_bot):
     def send_message(self, msg, chat_id):
         url = self.base + "sendMessage?chat_id={}&text={}".format(chat_id, msg)
         if msg is not None:
-            res = requests.get(url)
+            requests.get(url)
 
     def read_key_from_config_file(self, config, key):
         parser = cfg.ConfigParser()

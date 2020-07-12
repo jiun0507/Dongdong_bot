@@ -1,7 +1,10 @@
 from bot import telegram_chatbot
 import json
 import requests
-
+from reply_texts import (
+    reply,
+    button_text,
+)
 
 class message_handler:
     def __init__(self, bot):
@@ -42,7 +45,14 @@ class message_handler:
                     updates = self.bot.get_updates(offset=update_id)
         except requests.exceptions.Timeout:
             if telegram_id == -1:
-                message = '지금은 보내드릴게 없습니다.'
-                self.bot.send_message(message, 1346080433)
+                pass
+            message = reply.sleep.value
+            options = []
+            options.append(button_text.wake_up.value)
+
+            urls = []
+            urls.append(self.bot.wake_up_url)
+            inline_reply_markup = self.bot.get_inline_reply_markup_with_urls(options=options,urls=urls)
+            self.bot.send_full_message(self.bot.token, message, self.bot.bot_id, reply_markup=inline_reply_markup)
             return response
         return response
