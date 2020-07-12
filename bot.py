@@ -73,7 +73,6 @@ class jira_bot:
     def get_inline_reply_markup_with_urls(self, options, urls, parse_mode=None):
         markup = types.InlineKeyboardMarkup()
         for (option, url) in zip(options, urls):
-            print(options, url)
             item = types.InlineKeyboardButton(text=option, url=url)
             markup.add(item)
         return markup

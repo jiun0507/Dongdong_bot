@@ -39,14 +39,15 @@ class message_handler:
                         options = message.split('\n')
                         reply_markup = self.bot.get_reply_markup(options)
                     else:
-                        message = '뭐라 해드릴 말이 없군요...'
+                        raise ValueError
                     
                     self.bot.send_full_message(self.bot.token, message, from_, reply_markup=reply_markup)
                     updates = self.bot.get_updates(offset=update_id)
-        except requests.exceptions.Timeout:
+        except (requests.exceptions.Timeout, ValueError):
             if telegram_id == -1:
-                pass
-            message = reply.sleep.value
+                message = reply.no_work.value
+            else:
+                message = reply.sleep.value
             options = []
             options.append(button_text.wake_up.value)
 
@@ -55,4 +56,5 @@ class message_handler:
             inline_reply_markup = self.bot.get_inline_reply_markup_with_urls(options=options,urls=urls)
             self.bot.send_full_message(self.bot.token, message, self.bot.bot_id, reply_markup=inline_reply_markup)
             return response
+
         return response
