@@ -18,56 +18,51 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-I've tried web scrapping with Python before. But it was very slow. So I made one using Go. 
-
-Here's why I used Go:
-* Super Fast! It utilizes multiprocessing through goroutines.(It's amazing)
-* I am looking for jobs and I wanted to scrappe jobs from indeed. com
+My Secretary chatbot.
+It can
+- gather information from Jira ( Kasa's work management system ) and report to me ( Jira Open API)
+- Tell me about my current geolocation (Google Map Open API)
+- Report me about Github
+- Report me about current balance of paper trading account in Alpaca trading system ( Alpaca Open API )
 
 ### Built With
-This section should list any major frameworks that you built your project using. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
-* Go
-* Echo
-
-
+* Python
+* AWS Serverless
+* Telegram Chatbot interface
+* libraries = requests, google-api-python-client, alpaca-trade-api
 
 <!-- GETTING STARTED -->
 ## Getting Started
-Install Go on Visual Studio code and install GO package. 
+[ Commands ]
+- pipenv install
+- pipenv shell
+- python server.py
 
 ### Prerequisites
-
-This is an example of how to list things you need to use the software and how to install them.
-
-### Installation
-
-1. If You are a mac user go to -> https://golang.org/doc/install?download=go1.14.2.darwin-amd64.pkg.
-If not just google Go Download.
-2. Install the package.
-
+- Python 3.8
+- pipenv
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 Screenshots
-<img width="1198" alt="CSV_file" src="https://user-images.githubusercontent.com/22138357/80076460-31c08080-8587-11ea-980f-acbc56c7e96e.png">
-<img width="822" alt="Homepage" src="https://user-images.githubusercontent.com/22138357/80076580-60d6f200-8587-11ea-9724-ec13afc1d27e.png">
-<img width="1267" alt="CSV_file2" src="https://user-images.githubusercontent.com/22138357/80076566-5b79a780-8587-11ea-94a7-be60de3413c1.png">
-
-
 
 
 
 <!-- ROADMAP -->
 ## Roadmap
 
-See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a list of proposed features (and known issues).
+See the [open issues]
+(https://www.notion.so/Secretary-1da7035c583142c79f13197b2829df61) 
+for where the project is going!
 
 
 
 <!-- CONTRIBUTING -->
 ## Contributing
-
-Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+**greatly appreciated**.
+- https://github.com/eternnoir/pyTelegramBotAPI (python client telegram api library)
+- https://github.com/alpacahq/alpaca-trade-api-python (python client alpaca api library)
+- requests library
 
 1. Fork the Project
 2. Create your Branch 
@@ -80,6 +75,7 @@ Contributions are what make the open source community such an amazing place to b
 
 Jiun Kim - 
 Project Link: [https://github.com/jiun0507](https://github.com/jiun0507)
+Email: jkim2@bowdoin.edu
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
