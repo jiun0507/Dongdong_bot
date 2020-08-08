@@ -31,4 +31,3 @@ def lambda_handler(event=None, context=None):
         print(messages)
         for message in messages:
             telegram.send_full_message(text=message)
-lambda_handler()
