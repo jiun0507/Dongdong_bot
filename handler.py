@@ -1,64 +1,142 @@
-from bot import telegram_chatbot
+import configparser as cfg
 import json
-import requests
-from reply_texts import (
-    reply,
-    button_text,
+from abc import (
+    abstractclassmethod,
+    ABC,
 )
 
+import requests
 
-class message_handler:
-    def __init__(self, bot):
-        self.bot = bot
-        
-    def handle_message(self):
+from reply_texts import button_text, reply
+from telebot import apihelper, handler_backends, types, util
+
+
+class TelegramInterface:
+    def __init__(self, config):
+        self.token = self.read_key_from_config_file(config, 'token')
+        self.chat_id = self.read_key_from_config_file(config, 'bot_id')
+        self.wake_up_url = self.read_key_from_config_file(config, 'wake_up_url')
+        self.domain = self.read_key_from_config_file(config, 'domain')
+        self.base = "{}{}/".format(self.domain, self.token)
+
+
+    def get_updates(self, offset=None):
+        url = self.base + "getUpdates?timeout=100"
+        if offset:
+            url = url + "&offset={}".format(offset + 1)
+        r = requests.get(url, timeout=3)
+        return json.loads(r.content)
+
+
+    def get_reply_markup(self, options, parse_mode=None):
+        markup = types.ReplyKeyboardMarkup()
+        for option in options:
+            item = types.KeyboardButton(option)
+            markup.row(item)
+        return markup
+
+
+    def get_inline_reply_markup_with_urls(self, options, urls, parse_mode=None):
+        markup = types.InlineKeyboardMarkup()
+        for (option, url) in zip(options, urls):
+            item = types.InlineKeyboardButton(text=option, url=url)
+            markup.add(item)
+        return markup
+
+    def send_full_message(
+            self, text, chat_id=None, token=None,
+            disable_web_page_preview=None, reply_to_message_id=None, reply_markup=None,
+            parse_mode=None, disable_notification=None, timeout=None):
+        """
+        Use this method to send text messages. On success, the sent Message is returned.
+        :param token:
+        :param chat_id:
+        :param text:
+        :param disable_web_page_preview:
+        :param reply_to_message_id:
+        :param reply_markup:
+        :param parse_mode:
+        :param disable_notification:
+        :param timeout:
+        :return:
+        """
+        method_url = r"sendMessage"
+        payload = {'chat_id': str(self.chat_id), 'text': text}
+        if disable_web_page_preview is not None:
+            payload['disable_web_page_preview'] = disable_web_page_preview
+        if reply_to_message_id:
+            payload['reply_to_message_id'] = reply_to_message_id
+        if reply_markup:
+            payload['reply_markup'] = apihelper._convert_markup(reply_markup)
+        if parse_mode:
+            payload['parse_mode'] = parse_mode
+        if disable_notification is not None:
+            payload['disable_notification'] = disable_notification
+        if timeout:
+            payload['connect-timeout'] = timeout
+        return apihelper._make_request(self.token, method_url, params=payload, method='post')
+
+
+    def send_message(self, msg, chat_id):
+        url = self.base + "sendMessage?chat_id={}&text={}".format(chat_id, msg)
+        if msg is not None:
+            requests.get(url)
+
+    def read_key_from_config_file(self, config, key):
+        parser = cfg.ConfigParser()
+        parser.read(config)
+        return parser.get('creds', key)
+
+
+    def gather_messages(self):
+        sent_messages = []
         update_id = None
-        telegram_id = -1
-        response = {
-            "statusCode": 200,
-            "body": json.dumps({"message": 'ok'})
-        }
+
         try:
-            updates = self.bot.get_updates(offset=update_id)
+            updates = self.get_updates(offset=update_id)
             updates = updates["result"]
+
             if updates:
                 for item in updates:
-                    reply_markup = None
+                    # reply_markup = None
                     update_id = item["update_id"]
                     try:
                         message = str(item["message"]["text"])
                     except:
                         message = None
-                    from_ = item["message"]["from"]["id"]
-                    telegram_id = from_
-                    if message == 'Where am I?':
-                        message = self.bot.get_location(self.bot.google_map_key, self.bot.geolocation_url)
-                    elif message == 'Github':
-                        message = self.bot.get_github(self.bot.github_token)
-                    elif message == 'Jira':
-                        message = self.bot.get_jira_tickets(self.bot.jira_authorization, self.bot.jira_domain)
-                        options = message.split('\n')
-                        reply_markup = self.bot.get_reply_markup(options)
-                    elif message == 'alpaca':
-                        message = self.bot.get_account_info(api=self.bot.alpaca_api)
-                        
-                    else:
-                        raise ValueError
-                    
-                    self.bot.send_full_message(self.bot.token, message, from_, reply_markup=reply_markup)
-                    updates = self.bot.get_updates(offset=update_id)
+                    # from_ = item["message"]["from"]["id"]
+                    sent_messages.append(message)
+                    # self.send_full_message(self.token, message, from_, reply_markup=reply_markup)
+                    updates = self.get_updates(offset=update_id)
+
         except (requests.exceptions.Timeout, ValueError):
-            if telegram_id == -1:
-                message = reply.no_work.value
-            else:
-                message = reply.sleep.value
-            options = []
-            options.append(button_text.wake_up.value)
+            return sent_messages
 
-            urls = []
-            urls.append(self.bot.wake_up_url)
-            inline_reply_markup = self.bot.get_inline_reply_markup_with_urls(options=options,urls=urls)
-            self.bot.send_full_message(self.bot.token, message, self.bot.bot_id, reply_markup=inline_reply_markup)
-            return response
+        return sent_messages
 
-        return response
+class BaseView(ABC):
+    def __init__(self, use_case):
+        self.use_case = use_case
+
+    @abstractclassmethod
+    def get(self):
+        pass
+
+class JiraView(BaseView):
+    def get(self):
+        return self.use_case.get()
+
+
+class GithubView(BaseView):
+    def get(self):
+        return self.use_case.get()
+
+class GoogleMapView(BaseView):
+    def get(self):
+        result = self.use_case.get()
+        return result
+
+class AlpacaView(BaseView):
+    def get(self):
+        return self.use_case.get()
+
