@@ -45,7 +45,7 @@ It can
 <!-- USAGE EXAMPLES -->
 ## Usage
 Screenshots
-![Screenshot](screenshot1.png)
+![Screenshot](screenshots/screenshot1.png)
 
 
 <!-- ROADMAP -->
